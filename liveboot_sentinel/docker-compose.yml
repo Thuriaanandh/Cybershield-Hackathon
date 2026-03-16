@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  sentinel-server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: liveboot_sentinel_server
+    restart: unless-stopped
+    ports:
+      - "8443:8443"     # HTTPS API
+      - "8080:8080"     # HTTP (redirects to HTTPS)
+    environment:
+      # SECURITY: In production, use Docker secrets or a vault
+      LIVEBOOT_API_KEYS: "${LIVEBOOT_API_KEYS}"
+      LIVEBOOT_DB_URL: "sqlite+aiosqlite:///data/sentinel.db"
+      LIVEBOOT_CORS_ORIGINS: "${LIVEBOOT_CORS_ORIGINS:-http://localhost:3000}"
+      LIVEBOOT_RATE_LIMIT_MAX: "60"
+      LIVEBOOT_RATE_LIMIT_WINDOW: "60"
+      LIVEBOOT_ENABLE_DOCS: "${LIVEBOOT_ENABLE_DOCS:-false}"
+    volumes:
+      - sentinel_data:/var/lib/liveboot_sentinel
+      - ./certs:/certs:ro      # TLS certificates
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-k", "https://localhost:8443/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - sentinel_net
+
+volumes:
+  sentinel_data:
+
+networks:
+  sentinel_net:
+    driver: bridge
