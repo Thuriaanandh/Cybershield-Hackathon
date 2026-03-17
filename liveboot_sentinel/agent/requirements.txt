@@ -1,0 +1,12 @@
+# LiveBoot Sentinel - Agent Requirements
+# Python >= 3.11 required
+
+# HTTP client (stdlib urllib used — no extra deps needed for agent)
+# Cryptography for hash chaining (stdlib hashlib used)
+
+# Optional: for enhanced SSL certificate pinning
+# cryptography>=42.0.0
+
+# No third-party dependencies required for the agent.
+# All modules use Python stdlib only:
+#   - subprocess, hashlib, json, re, pathlib, ssl, socket, urllib

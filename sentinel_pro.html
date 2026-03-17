@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LiveBoot Sentinel — Cybercrime Detection Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ─── Design Tokens ───────────────────────────────────────────────────── */
+:root{
+  /* Neutral base — cool white */
+  --bg:      #F0F2F5;
+  --surface: #FFFFFF;
+  --s2:      #F5F7FA;
+  --s3:      #EBEEf3;
+  --border:  #DDE2EA;
+  --border2: #C8D0DC;
+
+  /* Ink */
+  --ink:     #0D1117;
+  --ink2:    #24292F;
+  --ink3:    #57606A;
+  --ink4:    #8C959F;
+  --ink5:    #C6CBD2;
+
+  /* Status colors — authoritative, precise */
+  --red:     #CF222E;  --red-s:#FFF0F0;   --red-m:#FFCECE;
+  --orange:  #BC4C00;  --or-s: #FFF4EC;   --or-m: #FFD8B5;
+  --amber:   #7D4E17;  --am-s: #FFF8EE;   --am-m: #F5D89E;
+  --green:   #1A7F37;  --gr-s: #EAFBEE;   --gr-m: #ACEEBB;
+  --blue:    #0550AE;  --bl-s: #EEF5FF;   --bl-m: #B6D4FE;
+  --navy:    #032D60;  --nv-s: #EEF3FF;   --nv-m: #B0CAFF;
+  --purple:  #6639BA;  --pu-s: #F5F0FF;   --pu-m: #D2B4FE;
+  --teal:    #0E6860;  --te-s: #ECFDF5;   --te-m: #6EE7B7;
+  --gray:    #424A53;
+
+  /* Tails OS color */
+  --tails:   #2F5397;  --tails-s:#EEF3FF; --tails-m:#B8CCF0;
+
+  --ff-h: 'Barlow Condensed', sans-serif;
+  --ff-b: 'Barlow', sans-serif;
+  --ff-m: 'JetBrains Mono', monospace;
+
+  --sh1: 0 1px 3px rgba(13,17,23,.08), 0 1px 2px rgba(13,17,23,.04);
+  --sh2: 0 3px 10px rgba(13,17,23,.10), 0 1px 3px rgba(13,17,23,.06);
+  --sh3: 0 10px 28px rgba(13,17,23,.12), 0 4px 8px rgba(13,17,23,.06);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:13px}
+body{background:var(--bg);color:var(--ink);font-family:var(--ff-b);
+     -webkit-font-smoothing:antialiased;min-height:100vh}
+button{cursor:pointer;font-family:inherit;border:none;background:none}
+input{font-family:inherit}
+
+/* ─── Top Banner ──────────────────────────────────────────────────────── */
+.top-banner{
+  background:var(--navy);
+  padding:6px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.banner-left{
+  display:flex;align-items:center;gap:16px;
+  font-family:var(--ff-h);font-size:11px;font-weight:500;
+  color:rgba(255,255,255,.6);letter-spacing:1.5px;text-transform:uppercase;
+}
+.banner-left span{color:rgba(255,255,255,.35)}
+.banner-right{
+  font-family:var(--ff-m);font-size:10px;color:rgba(255,255,255,.4);
+  letter-spacing:.5px;
+}
+.banner-case{
+  font-family:var(--ff-m);font-size:10px;color:rgba(255,255,255,.7);
+  letter-spacing:1px;
+}
+
+/* ─── Header ──────────────────────────────────────────────────────────── */
+.hdr{
+  background:var(--surface);
+  border-bottom:2px solid var(--border);
+  height:62px;display:flex;align-items:center;padding:0 24px;gap:16px;
+  box-shadow:var(--sh1);position:sticky;top:0;z-index:300;
+}
+
+.brand{display:flex;align-items:center;gap:14px;flex-shrink:0}
+
+.brand-emblem{
+  width:40px;height:40px;flex-shrink:0;
+  background:var(--navy);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(3,45,96,.3);
+}
+.brand-emblem svg{width:22px;height:22px}
+
+.brand-text{}
+.brand-name{
+  font-family:var(--ff-h);font-size:20px;font-weight:800;
+  color:var(--ink);letter-spacing:.5px;text-transform:uppercase;
+  line-height:1;
+}
+.brand-sub{
+  font-family:var(--ff-b);font-size:10px;color:var(--ink4);
+  letter-spacing:.5px;margin-top:2px;font-weight:500;
+}
+
+.hdr-divider{width:1px;height:32px;background:var(--border);flex-shrink:0}
+
+.hdr-status{display:flex;align-items:center;gap:6px}
+.status-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 0 2px rgba(26,127,55,.2);
+  animation:pulse-g 2s infinite;
+}
+@keyframes pulse-g{0%,100%{box-shadow:0 0 0 2px rgba(26,127,55,.2)}50%{box-shadow:0 0 0 4px rgba(26,127,55,.1)}}
+.status-text{font-family:var(--ff-h);font-size:12px;font-weight:600;color:var(--green);letter-spacing:1px;text-transform:uppercase}
+
+.hdr-right{display:flex;align-items:center;gap:12px;margin-left:auto}
+
+.conn-pill{
+  display:flex;align-items:center;gap:5px;padding:5px 11px;
+  background:var(--s2);border:1px solid var(--border);border-radius:5px;
+  font-family:var(--ff-m);font-size:10px;color:var(--ink3);transition:all .2s;
+}
+.pip{width:6px;height:6px;border-radius:50%;background:var(--ink5);transition:background .3s}
+.conn-pill.ok .pip{background:var(--green)}
+.conn-pill.er .pip{background:var(--red)}
+.conn-pill.ok{color:var(--ink2)}
+
+.hdr-clk{font-family:var(--ff-m);font-size:11px;color:var(--ink3);letter-spacing:.5px}
+
+.btn-cfg{
+  padding:7px 14px;border:1.5px solid var(--border2);border-radius:5px;
+  background:var(--surface);color:var(--ink2);
+  font-family:var(--ff-h);font-size:12px;font-weight:600;
+  letter-spacing:.5px;text-transform:uppercase;
+  transition:all .15s;display:flex;align-items:center;gap:5px;
+}
+.btn-cfg:hover{background:var(--s2);border-color:var(--navy)}
+
+/* ─── Stats Strip ─────────────────────────────────────────────────────── */
+.stats-strip{
+  display:grid;grid-template-columns:repeat(7,1fr);
+  background:var(--surface);
+  border-bottom:2px solid var(--border);
+  box-shadow:var(--sh1);
+}
+
+.ss{
+  padding:14px 20px;border-right:1px solid var(--border);
+  position:relative;transition:background .15s;cursor:default;
+}
+.ss:last-child{border-right:none}
+.ss:hover{background:var(--s2)}
+
+.ss-lbl{
+  font-family:var(--ff-h);font-size:10px;font-weight:600;
+  color:var(--ink4);letter-spacing:2px;text-transform:uppercase;
+  margin-bottom:5px;
+}
+.ss-val{
+  font-family:var(--ff-h);font-size:32px;font-weight:800;
+  line-height:1;color:var(--ink);transition:color .3s;
+}
+.ss-sub{font-family:var(--ff-b);font-size:10px;color:var(--ink5);margin-top:2px}
+.ss-bar{position:absolute;bottom:0;left:0;right:0;height:3px;transition:background .3s}
+
+.ss.crit .ss-val{color:var(--red)}    .ss.crit .ss-bar{background:var(--red)}
+.ss.warn .ss-val{color:var(--orange)}.ss.warn .ss-bar{background:var(--orange)}
+.ss.good .ss-val{color:var(--green)} .ss.good .ss-bar{background:var(--green)}
+.ss.blue .ss-val{color:var(--blue)}  .ss.blue .ss-bar{background:var(--blue)}
+.ss.navy .ss-val{color:var(--navy)}  .ss.navy .ss-bar{background:var(--navy)}
+.ss.teal .ss-val{color:var(--teal)}  .ss.teal .ss-bar{background:var(--teal)}
+.ss.pur  .ss-val{color:var(--purple)}.ss.pur  .ss-bar{background:var(--purple)}
+
+/* ─── Tab Bar ─────────────────────────────────────────────────────────── */
+.tab-bar{
+  background:var(--surface);
+  border-bottom:2px solid var(--border);
+  display:flex;padding:0 20px;gap:0;
+  overflow-x:auto;
+}
+.tab-bar::-webkit-scrollbar{height:0}
+
+.tab-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:14px 18px;
+  font-family:var(--ff-h);font-size:13px;font-weight:600;
+  letter-spacing:1px;text-transform:uppercase;
+  color:var(--ink4);border-bottom:3px solid transparent;
+  transition:all .15s;white-space:nowrap;flex-shrink:0;
+  margin-bottom:-2px;
+}
+.tab-btn:hover{color:var(--ink2);background:var(--s2)}
+.tab-btn.active{color:var(--navy);border-bottom-color:var(--navy)}
+.tab-btn.active .ti{opacity:1;color:var(--navy)}
+
+.ti{width:14px;height:14px;opacity:.5;transition:all .15s;flex-shrink:0}
+
+.tc{
+  font-family:var(--ff-m);font-size:9px;padding:2px 7px;
+  border-radius:3px;background:var(--s3);color:var(--ink3);
+  transition:all .2s;font-weight:600;
+}
+.tab-btn.active .tc{background:var(--nv-s);color:var(--navy);border:1px solid var(--nv-m)}
+.tc.alert-new{background:var(--red-s);color:var(--red);animation:pulse-r 1s 3}
+@keyframes pulse-r{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ─── Tab Content ─────────────────────────────────────────────────────── */
+.tab-content{display:none;height:calc(100vh - 178px);overflow:hidden}
+.tab-content.active{display:flex;flex-direction:column}
+
+/* ─── Panel ───────────────────────────────────────────────────────────── */
+.panel{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;display:flex;flex-direction:column;
+  overflow:hidden;box-shadow:var(--sh1);
+}
+
+.ph{
+  padding:12px 16px;border-bottom:1px solid var(--border);
+  background:var(--s2);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+
+.ph-title{
+  font-family:var(--ff-h);font-size:12px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;color:var(--ink2);
+  display:flex;align-items:center;gap:8px;
+}
+
+.ph-accent{
+  width:3px;height:14px;border-radius:2px;
+  background:var(--navy);flex-shrink:0;
+}
+
+.pbadge{
+  font-family:var(--ff-h);font-size:10px;font-weight:600;
+  padding:3px 9px;border-radius:3px;letter-spacing:.8px;
+  text-transform:uppercase;
+}
+.pb-live   {background:var(--gr-s);color:var(--green);border:1px solid var(--gr-m)}
+.pb-count  {background:var(--nv-s);color:var(--navy); border:1px solid var(--nv-m)}
+.pb-red    {background:var(--red-s);color:var(--red);  border:1px solid var(--red-m)}
+.pb-orange {background:var(--or-s);color:var(--orange);border:1px solid var(--or-m)}
+.pb-purple {background:var(--pu-s);color:var(--purple);border:1px solid var(--pu-m)}
+.pb-tails  {background:var(--tails-s);color:var(--tails);border:1px solid var(--tails-m)}
+.pb-teal   {background:var(--te-s);color:var(--teal);  border:1px solid var(--te-m)}
+.pb-amber  {background:var(--am-s);color:var(--amber);  border:1px solid var(--am-m)}
+
+.scroll{
+  overflow-y:auto;flex:1;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.scroll::-webkit-scrollbar{width:4px}
+.scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+.empty{
+  padding:28px;text-align:center;
+  font-family:var(--ff-h);font-size:11px;font-weight:500;
+  color:var(--ink5);letter-spacing:1.5px;text-transform:uppercase;
+}
+
+/* ─── Layout grids ────────────────────────────────────────────────────── */
+.grid-alerts{display:grid;grid-template-columns:300px 1fr 360px;gap:12px;padding:12px;height:100%}
+.grid-network{display:grid;grid-template-columns:1fr 340px;gap:12px;padding:12px;height:100%}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:12px;height:100%}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px;height:100%}
+.grid-1{display:grid;grid-template-columns:1fr;gap:12px;padding:12px;height:100%}
+
+/* ─── Alert Cards ─────────────────────────────────────────────────────── */
+#alert-list{padding:8px;display:flex;flex-direction:column;gap:5px}
+
+.ac{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:7px;padding:10px 12px 10px 16px;
+  cursor:pointer;transition:all .15s;position:relative;
+  animation:fin .25s ease-out;
+}
+@keyframes fin{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
+
+.ac::before{
+  content:'';position:absolute;left:0;top:4px;bottom:4px;
+  width:4px;border-radius:2px;background:var(--border2);
+}
+.ac.lv-CRITICAL::before{background:var(--red)}
+.ac.lv-WARNING::before {background:var(--orange)}
+.ac.lv-NORMAL::before  {background:var(--green)}
+.ac.is-tails::before   {background:var(--tails)}
+.ac.is-forensic::before{background:var(--purple)}
+.ac.is-sentinel::before{background:var(--amber)}
+
+.ac:hover{background:var(--s2);border-color:var(--border2);box-shadow:var(--sh1)}
+.ac.sel {background:var(--nv-s);border-color:var(--nv-m)}
+
+.ac-r1{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.ac-score{
+  font-family:var(--ff-h);font-size:22px;font-weight:800;
+  min-width:36px;line-height:1;
+}
+.sv-c{color:var(--red)}  .sv-w{color:var(--orange)} .sv-n{color:var(--green)}
+
+.ac-host{
+  font-family:var(--ff-m);font-size:11px;font-weight:500;color:var(--ink);
+  flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.ac-time{font-family:var(--ff-m);font-size:9px;color:var(--ink4);flex-shrink:0}
+.ac-tags{display:flex;flex-wrap:wrap;gap:4px}
+
+.tag{font-family:var(--ff-h);font-size:9px;font-weight:600;padding:2px 7px;border-radius:3px;letter-spacing:.5px;text-transform:uppercase}
+.t-os   {background:var(--nv-s);color:var(--navy);  border:1px solid var(--nv-m)}
+.t-boot {background:var(--or-s);color:var(--orange);border:1px solid var(--or-m)}
+.t-for  {background:var(--pu-s);color:var(--purple);border:1px solid var(--pu-m)}
+.t-net  {background:var(--bl-s);color:var(--blue);  border:1px solid var(--bl-m)}
+.t-sen  {background:var(--am-s);color:var(--amber);  border:1px solid var(--am-m)}
+.t-tail {background:var(--tails-s);color:var(--tails);border:1px solid var(--tails-m)}
+
+/* ─── Flash ───────────────────────────────────────────────────────────── */
+@keyframes flash{0%{background:#FFF3B0}100%{background:var(--surface)}}
+.flash{animation:flash .8s ease-out}
+
+/* ─── Detail Panel ────────────────────────────────────────────────────── */
+#detail-body{padding:16px;display:flex;flex-direction:column;gap:14px}
+
+.det-empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:220px;gap:12px;color:var(--ink4);
+}
+.det-empty svg{opacity:.2}
+.det-empty span{font-family:var(--ff-h);font-size:11px;letter-spacing:2px;text-transform:uppercase;text-align:center;line-height:2}
+
+.d-hostname{font-family:var(--ff-h);font-size:22px;font-weight:800;color:var(--ink);letter-spacing:.5px;text-transform:uppercase}
+.d-score-row{display:flex;align-items:baseline;gap:8px}
+.d-score-big{font-family:var(--ff-h);font-size:52px;font-weight:800;line-height:1}
+.d-score-meta{font-family:var(--ff-m);font-size:10px;color:var(--ink4);line-height:1.6}
+
+.d-sec{display:flex;flex-direction:column;gap:6px}
+.d-sec-t{
+  font-family:var(--ff-h);font-size:10px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;color:var(--ink3);
+  padding-bottom:5px;border-bottom:1.5px solid var(--border);
+}
+
+.d-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:2px 0}
+.d-key{font-family:var(--ff-m);font-size:10px;color:var(--ink4);flex-shrink:0}
+.d-val{font-family:var(--ff-m);font-size:10px;color:var(--ink);text-align:right;max-width:190px;word-break:break-all}
+.v-r{color:var(--red);font-weight:600}  .v-o{color:var(--orange);font-weight:600}
+.v-g{color:var(--green);font-weight:600} .v-b{color:var(--blue)}
+.v-t{color:var(--tails);font-weight:600} .v-p{color:var(--purple);font-weight:600}
+
+.ind-list{display:flex;flex-direction:column;gap:3px;max-height:130px;overflow-y:auto}
+.ind-item{
+  font-family:var(--ff-m);font-size:9px;padding:3px 8px;
+  background:var(--s2);border:1px solid var(--border);border-radius:3px;
+  color:var(--ink2);display:flex;align-items:center;gap:5px;
+}
+.ind-item::before{content:'›';color:var(--navy);font-weight:700;font-size:12px}
+.ind-item.tails-ind{background:var(--tails-s);border-color:var(--tails-m);color:var(--tails)}
+.ind-item.tails-ind::before{color:var(--tails)}
+
+/* ─── Tool card ───────────────────────────────────────────────────────── */
+.tool-card{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:7px;padding:10px 12px;
+  border-left:4px solid var(--orange);
+  display:flex;flex-direction:column;gap:4px;
+}
+.tool-card.tails-tool{border-left-color:var(--tails)}
+.tc-top{display:flex;align-items:center;justify-content:space-between}
+.tc-name{font-family:var(--ff-h);font-size:13px;font-weight:700;color:var(--ink);text-transform:uppercase;letter-spacing:.5px}
+.tc-mitre{font-family:var(--ff-m);font-size:9px;padding:2px 7px;background:var(--nv-s);color:var(--navy);border-radius:3px;border:1px solid var(--nv-m)}
+.tc-tech{font-family:var(--ff-b);font-size:11px;color:var(--ink3);font-weight:500}
+.tc-risk{font-family:var(--ff-h);font-size:10px;font-weight:600;color:var(--orange)}
+.tc-cmd{font-family:var(--ff-m);font-size:9px;color:var(--ink2);background:var(--s3);padding:5px 8px;border-radius:3px;border-left:3px solid var(--amber);white-space:pre-wrap;word-break:break-all;margin-top:2px}
+
+.cmd-card{
+  background:var(--s2);border:1px solid var(--border);
+  border-left:4px solid var(--amber);border-radius:4px;padding:6px 10px;
+}
+.cmd-txt{font-family:var(--ff-m);font-size:10px;color:var(--ink);font-weight:500}
+.cmd-meta{display:flex;gap:8px;margin-top:2px;font-family:var(--ff-m);font-size:9px;color:var(--ink4)}
+.cmd-tech{color:var(--orange);font-weight:600}
+
+/* ─── Donut ───────────────────────────────────────────────────────────── */
+.donut-wrap{position:relative;width:110px;height:110px;flex-shrink:0}
+.donut-svg{width:110px;height:110px;transform:rotate(-90deg)}
+.d-bg{fill:none;stroke:var(--s3);stroke-width:10}
+.d-fg{fill:none;stroke:var(--red);stroke-width:10;stroke-linecap:round;stroke-dasharray:283;stroke-dashoffset:283;transition:stroke-dashoffset 1s ease,stroke .5s}
+.donut-ctr{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.d-pct{font-family:var(--ff-h);font-size:22px;font-weight:800;color:var(--red);line-height:1}
+.d-lbl{font-family:var(--ff-h);font-size:9px;color:var(--ink4);letter-spacing:1.5px;text-transform:uppercase}
+
+.risk-bars{flex:1;display:flex;flex-direction:column;gap:9px}
+.rb-row{display:flex;align-items:center;gap:8px}
+.rb-lbl{font-family:var(--ff-h);font-size:10px;font-weight:600;color:var(--ink3);width:55px;text-transform:uppercase;letter-spacing:.5px}
+.rb-track{flex:1;height:6px;background:var(--s3);border-radius:3px;overflow:hidden}
+.rb-fill{height:100%;border-radius:3px;transition:width 1s ease}
+.rb-cnt{font-family:var(--ff-m);font-size:10px;color:var(--ink4);width:22px;text-align:right;font-weight:600}
+
+/* ─── Host Table ──────────────────────────────────────────────────────── */
+.htbl{width:100%;border-collapse:collapse}
+.htbl th{
+  font-family:var(--ff-h);font-size:10px;font-weight:700;
+  color:var(--ink3);letter-spacing:2px;text-transform:uppercase;
+  padding:9px 14px;text-align:left;
+  border-bottom:1.5px solid var(--border);
+  background:var(--s2);white-space:nowrap;
+}
+.htbl td{
+  padding:9px 14px;font-family:var(--ff-m);font-size:11px;
+  color:var(--ink);border-bottom:1px solid var(--s3);white-space:nowrap;
+}
+.htbl tr:hover td{background:var(--s2)}
+.htbl tr:last-child td{border-bottom:none}
+
+.status-pill{
+  font-family:var(--ff-h);font-size:9px;font-weight:700;
+  padding:2px 8px;border-radius:3px;display:inline-block;
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.sp-c{background:var(--red-s);color:var(--red);border:1px solid var(--red-m)}
+.sp-w{background:var(--or-s);color:var(--orange);border:1px solid var(--or-m)}
+.sp-n{background:var(--gr-s);color:var(--green);border:1px solid var(--gr-m)}
+.sp-t{background:var(--tails-s);color:var(--tails);border:1px solid var(--tails-m)}
+
+/* ─── Timeline ────────────────────────────────────────────────────────── */
+.tl-item{display:flex;gap:10px;padding:8px 14px;border-bottom:1px solid var(--s3);animation:fin .25s}
+.tl-item:last-child{border-bottom:none}
+.tl-spine{display:flex;flex-direction:column;align-items:center;padding-top:3px;flex-shrink:0;width:12px}
+.tl-pip{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tl-line{width:1px;flex:1;min-height:12px;background:var(--border);margin-top:3px}
+.tl-body{flex:1;min-width:0}
+.tl-ts{font-family:var(--ff-m);font-size:9px;color:var(--ink4);margin-bottom:2px}
+.tl-msg{font-family:var(--ff-b);font-size:11px;color:var(--ink2);font-weight:500}
+.tl-src{font-family:var(--ff-m);font-size:9px;color:var(--blue);font-weight:600}
+
+/* ─── Network cards ───────────────────────────────────────────────────── */
+.net-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:7px;padding:10px 12px;animation:fin .25s;
+}
+.net-card.PORT_SCAN,.net-card.ARP_SWEEP{border-left:4px solid var(--amber)}
+.net-card.C2_CONNECTION,.net-card.EXFILTRATION{border-left:4px solid var(--red)}
+.net-card.BRUTE_FORCE,.net-card.LATERAL_MOVEMENT{border-left:4px solid var(--orange)}
+
+.na-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.na-badge{
+  font-family:var(--ff-h);font-size:9px;font-weight:700;
+  padding:2px 8px;border-radius:3px;letter-spacing:.8px;text-transform:uppercase;
+}
+.nb-am{background:var(--am-s);color:var(--amber);border:1px solid var(--am-m)}
+.nb-r {background:var(--red-s);color:var(--red);border:1px solid var(--red-m)}
+.nb-or{background:var(--or-s);color:var(--orange);border:1px solid var(--or-m)}
+.na-tech{font-family:var(--ff-b);font-size:11px;color:var(--ink3);flex:1;font-weight:500}
+.na-desc{font-family:var(--ff-m);font-size:10px;color:var(--ink);margin-bottom:4px;font-weight:500}
+.na-foot{display:flex;justify-content:space-between}
+.na-ip{font-family:var(--ff-m);font-size:9px;color:var(--blue);font-weight:600}
+.na-time{font-family:var(--ff-m);font-size:9px;color:var(--ink4)}
+
+/* ─── Net risk bar ────────────────────────────────────────────────────── */
+.nrb{padding:10px 14px;border-bottom:1px solid var(--border);background:var(--s2)}
+.nrb-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.nrb-label{font-family:var(--ff-h);font-size:11px;font-weight:700;color:var(--ink2);letter-spacing:1px;text-transform:uppercase}
+.nrb-val{font-family:var(--ff-h);font-size:18px;font-weight:800;color:var(--navy)}
+.nrb-track{height:7px;background:var(--s3);border-radius:4px;overflow:hidden;border:1px solid var(--border)}
+.nrb-fill{height:100%;border-radius:4px;transition:width 1s,background .5s;background:var(--green)}
+
+/* ─── Mon badge ───────────────────────────────────────────────────────── */
+.mon-on {font-family:var(--ff-h);font-size:10px;font-weight:700;padding:3px 10px;border-radius:3px;background:var(--gr-s);color:var(--green);border:1px solid var(--gr-m);letter-spacing:.5px;text-transform:uppercase}
+.mon-off{font-family:var(--ff-h);font-size:10px;font-weight:700;padding:3px 10px;border-radius:3px;background:var(--s3);color:var(--ink4);border:1px solid var(--border);letter-spacing:.5px;text-transform:uppercase}
+
+/* ─── MITRE rows ──────────────────────────────────────────────────────── */
+.mitre-row{
+  display:flex;align-items:center;padding:8px 16px;
+  border-bottom:1px solid var(--s3);cursor:pointer;transition:background .1s;
+}
+.mitre-row:last-child{border-bottom:none}
+.mitre-row:hover{background:var(--s2)}
+.mt-num{font-family:var(--ff-h);font-size:10px;font-weight:700;color:var(--ink4);width:24px;flex-shrink:0}
+.mt-tech{font-family:var(--ff-b);font-size:12px;color:var(--ink2);flex:1;font-weight:500}
+.mt-id{font-family:var(--ff-m);font-size:9px;color:var(--blue);font-weight:600;margin-right:10px;background:var(--bl-s);padding:1px 6px;border-radius:3px;border:1px solid var(--bl-m)}
+.mt-cnt{font-family:var(--ff-h);font-size:11px;font-weight:800;padding:2px 9px;background:var(--am-s);color:var(--amber);border-radius:3px;border:1px solid var(--am-m)}
+
+/* ─── Forensic card ───────────────────────────────────────────────────── */
+.fcard{
+  background:var(--surface);border:1px solid var(--border);
+  border-left:4px solid var(--purple);border-radius:7px;
+  padding:12px 14px;cursor:pointer;transition:all .15s;animation:fin .25s;
+  margin-bottom:8px;
+}
+.fcard:hover{background:var(--s2);box-shadow:var(--sh1)}
+.fcard.tails-fcard{border-left-color:var(--tails)}
+.fcard-top{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.fcard-score{font-family:var(--ff-h);font-size:20px;font-weight:800;color:var(--purple)}
+.fcard-score.tails-score{color:var(--tails)}
+.fcard-host{font-family:var(--ff-m);font-size:11px;font-weight:600;color:var(--ink);flex:1}
+.fcard-time{font-family:var(--ff-m);font-size:9px;color:var(--ink4)}
+.fcard-sum{font-family:var(--ff-b);font-size:10px;color:var(--ink3);line-height:1.6}
+
+/* ─── Tails Alert Banner ──────────────────────────────────────────────── */
+.tails-banner{
+  background:linear-gradient(135deg,var(--tails-s) 0%,#EEF3FF 100%);
+  border:1.5px solid var(--tails-m);border-radius:7px;
+  padding:12px 16px;display:flex;align-items:center;gap:12px;
+  animation:fin .3s;
+}
+.tails-banner-icon{
+  width:36px;height:36px;background:var(--tails);border-radius:6px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.tails-banner-icon svg{width:18px;height:18px}
+.tails-banner-title{font-family:var(--ff-h);font-size:14px;font-weight:800;color:var(--tails);letter-spacing:.5px;text-transform:uppercase}
+.tails-banner-sub{font-family:var(--ff-b);font-size:11px;color:var(--ink3);margin-top:2px}
+
+/* ─── Sentinel info card ──────────────────────────────────────────────── */
+.sinfo{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.sinfo-title{font-family:var(--ff-h);font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);border-bottom:1px solid var(--border);padding-bottom:6px}
+.sinfo-row{display:flex;justify-content:space-between;font-size:11px}
+.sinfo-key{font-family:var(--ff-b);color:var(--ink3);font-weight:500}
+.sinfo-val{font-family:var(--ff-m);color:var(--ink);font-weight:600}
+.sinfo-val.v-kali {color:var(--red)}
+.sinfo-val.v-tails{color:var(--tails)}
+.sinfo-val.v-clean{color:var(--green)}
+
+/* ─── RAM dump card ───────────────────────────────────────────────────── */
+.rdc{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:12px 14px;cursor:pointer;transition:all .15s;border-left:4px solid var(--teal)}
+.rdc:hover{background:var(--s2);box-shadow:var(--sh1)}
+.rdc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.rdc-name{font-family:var(--ff-m);font-size:11px;font-weight:600;color:var(--ink)}
+.rdc-badge{font-family:var(--ff-h);font-size:9px;font-weight:700;padding:2px 7px;background:var(--te-s);color:var(--teal);border-radius:3px;border:1px solid var(--te-m);letter-spacing:.5px;text-transform:uppercase}
+.rdc-meta{display:flex;gap:10px;font-family:var(--ff-m);font-size:9px;color:var(--ink4)}
+
+/* ─── Stats card ──────────────────────────────────────────────────────── */
+.boot-stat{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.bs-title{font-family:var(--ff-h);font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);border-bottom:1px solid var(--border);padding-bottom:6px}
+.bs-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0}
+.bs-key{font-family:var(--ff-b);font-size:11px;color:var(--ink3);font-weight:500}
+.bs-val{font-family:var(--ff-h);font-size:16px;font-weight:800;color:var(--navy)}
+
+/* ─── Modal ───────────────────────────────────────────────────────────── */
+.overlay{position:fixed;inset:0;background:rgba(13,17,23,.5);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.overlay.open{display:flex}
+.modal{
+  background:var(--surface);border-radius:10px;padding:28px;width:460px;
+  box-shadow:var(--sh3);border:1.5px solid var(--border);
+  display:flex;flex-direction:column;gap:18px;
+}
+.modal-header{display:flex;align-items:center;gap:12px}
+.modal-emblem{width:36px;height:36px;background:var(--navy);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.modal-emblem svg{width:18px;height:18px}
+.modal-title{font-family:var(--ff-h);font-size:18px;font-weight:800;color:var(--ink);text-transform:uppercase;letter-spacing:.5px}
+.modal-sub{font-family:var(--ff-b);font-size:11px;color:var(--ink4);margin-top:1px}
+.modal-field{display:flex;flex-direction:column;gap:5px}
+.modal-lbl{font-family:var(--ff-h);font-size:10px;font-weight:700;color:var(--ink3);letter-spacing:2px;text-transform:uppercase}
+.modal-input{background:var(--s2);border:1.5px solid var(--border);border-radius:5px;padding:10px 12px;color:var(--ink);font-family:var(--ff-m);font-size:12px;outline:none;transition:border-color .15s;width:100%}
+.modal-input:focus{border-color:var(--navy);background:var(--nv-s)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end}
+.btn-p{font-family:var(--ff-h);font-size:13px;font-weight:700;padding:10px 22px;background:var(--navy);border-radius:5px;color:#fff;letter-spacing:1px;text-transform:uppercase;transition:all .15s}
+.btn-p:hover{background:var(--blue);box-shadow:var(--sh2)}
+.btn-c{font-family:var(--ff-h);font-size:13px;font-weight:600;padding:10px 22px;background:transparent;border:1.5px solid var(--border2);border-radius:5px;color:var(--ink3);letter-spacing:1px;text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<!-- MODAL -->
+<div class="overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-emblem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div>
+        <div class="modal-title">Server Configuration</div>
+        <div class="modal-sub">LiveBoot Sentinel Detection Platform</div>
+      </div>
+    </div>
+    <div class="modal-field">
+      <div class="modal-lbl">Server URL</div>
+      <input class="modal-input" id="cfg-url" placeholder="https://11.12.66.26:8443">
+    </div>
+    <div class="modal-field">
+      <div class="modal-lbl">API Key</div>
+      <input class="modal-input" id="cfg-key" placeholder="sentinel-dev-key-2026" type="password">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-c" onclick="closeModal()">Cancel</button>
+      <button class="btn-p" onclick="doConnect()">Connect</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOP BANNER -->
+<div class="top-banner">
+  <div class="banner-left">
+    <span>LiveBoot Sentinel</span> ›
+    <span>Cybercrime Detection Platform</span> ›
+    <span class="banner-case">External OS Intrusion Detection System</span>
+  </div>
+  <div class="banner-right" id="banner-time">Loading...</div>
+</div>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="brand">
+    <div class="brand-emblem">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <polyline points="9,12 11,14 15,10"/>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <div class="brand-name">LiveBoot Sentinel</div>
+      <div class="brand-sub">Cybercrime Detection &amp; Forensic Analysis Platform · Device 1</div>
+    </div>
+  </div>
+  <div class="hdr-divider"></div>
+  <div class="hdr-status">
+    <div class="status-dot"></div>
+    <div class="status-text">System Active</div>
+  </div>
+  <div class="hdr-right">
+    <div class="conn-pill" id="ws-pill"><div class="pip"></div><span id="ws-txt">WebSocket</span></div>
+    <div class="conn-pill" id="api-pill"><div class="pip"></div><span id="api-txt">API</span></div>
+    <div class="hdr-clk" id="clk"></div>
+    <button class="btn-cfg" onclick="openModal()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Config
+    </button>
+  </div>
+</header>
+
+<!-- STATS STRIP -->
+<div class="stats-strip">
+  <div class="ss navy"><div class="ss-lbl">Monitored Hosts</div><div class="ss-val" id="s-hosts">0</div><div class="ss-sub">Active endpoints</div><div class="ss-bar"></div></div>
+  <div class="ss good"><div class="ss-lbl">Normal Events</div><div class="ss-val" id="s-normal">0</div><div class="ss-sub">Clean activity</div><div class="ss-bar"></div></div>
+  <div class="ss warn"><div class="ss-lbl">Warning Alerts</div><div class="ss-val" id="s-warning">0</div><div class="ss-sub">Requires review</div><div class="ss-bar"></div></div>
+  <div class="ss crit"><div class="ss-lbl">Critical Alerts</div><div class="ss-val" id="s-critical">0</div><div class="ss-sub">Immediate action</div><div class="ss-bar"></div></div>
+  <div class="ss pur" ><div class="ss-lbl">Techniques</div><div class="ss-val" id="s-tech">0</div><div class="ss-sub">MITRE ATT&CK</div><div class="ss-bar"></div></div>
+  <div class="ss blue"><div class="ss-lbl">Network Attacks</div><div class="ss-val" id="s-net">0</div><div class="ss-sub">Live detections</div><div class="ss-bar"></div></div>
+  <div class="ss teal"><div class="ss-lbl">Sentinel Findings</div><div class="ss-val" id="s-sentinel">0</div><div class="ss-sub">From captured data</div><div class="ss-bar"></div></div>
+</div>
+
+<!-- TAB BAR -->
+<nav class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('alerts',this)">
+    <svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    Alert Feed <span class="tc" id="tc-alerts">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('hosts',this)">
+    <svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+    Host Monitor <span class="tc" id="tc-hosts">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('network',this)">
+    <svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/></svg>
+    Network Monitor <span class="tc" id="tc-net">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('sentinel',this)">
+    <svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    Sentinel Analysis <span class="tc" id="tc-sentinel">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('forensic',this)">
+    <svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    Forensic Reports <span class="tc" id="tc-forensic">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('mitre',this)">
+    <svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    MITRE ATT&amp;CK <span class="tc" id="tc-mitre">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('ram',this)">
+    <svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v6H4zM4 14h16v6H4z"/></svg>
+    RAM / Volatility <span class="tc" id="tc-ram">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('timeline',this)">
+    <svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+    Boot Timeline
+  </button>
+</nav>
+
+<!-- ══ ALERTS ══════════════════════════════════════════════════════════ -->
+<div class="tab-content active" id="tab-alerts">
+  <div class="grid-alerts">
+    <div class="panel">
+      <div class="ph"><div class="ph-title"><div class="ph-accent"></div>Real-Time Alert Feed</div><div class="pbadge pb-live">● Live</div></div>
+      <div class="scroll"><div id="alert-list"><div class="empty">Awaiting alerts...</div></div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;overflow:hidden">
+      <div class="panel" style="flex-shrink:0">
+        <div class="ph"><div class="ph-title"><div class="ph-accent"></div>Risk Distribution</div><div class="pbadge pb-count" id="total-badge">0 total</div></div>
+        <div style="display:flex;align-items:center;gap:20px;padding:14px">
+          <div class="donut-wrap">
+            <svg class="donut-svg" viewBox="0 0 100 100">
+              <circle class="d-bg" cx="50" cy="50" r="45"/>
+              <circle class="d-fg" id="d-fg" cx="50" cy="50" r="45"/>
+            </svg>
+            <div class="donut-ctr">
+              <div class="d-pct" id="d-pct">0%</div>
+              <div class="d-lbl">Critical</div>
+            </div>
+          </div>
+          <div class="risk-bars">
+            <div class="rb-row"><div class="rb-lbl">Critical</div><div class="rb-track"><div class="rb-fill" id="rb-c" style="width:0%;background:var(--red)"></div></div><div class="rb-cnt" id="rc-c">0</div></div>
+            <div class="rb-row"><div class="rb-lbl">Warning</div><div class="rb-track"><div class="rb-fill" id="rb-w" style="width:0%;background:var(--orange)"></div></div><div class="rb-cnt" id="rc-w">0</div></div>
+            <div class="rb-row"><div class="rb-lbl">Normal</div><div class="rb-track"><div class="rb-fill" id="rb-n" style="width:0%;background:var(--green)"></div></div><div class="rb-cnt" id="rc-n">0</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div class="ph-title"><div class="ph-accent"></div>Alert Detail</div><div class="pbadge pb-count" id="detail-badge" style="display:none"></div></div>
+      <div class="scroll">
+        <div id="detail-body">
+          <div class="det-empty">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9,12 11,14 15,10"/></svg>
+            <span>Select an alert<br>to view forensic details</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HOSTS ════════════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-hosts">
+  <div class="grid-1">
+    <div class="panel" style="flex:1">
+      <div class="ph"><div class="ph-title"><div class="ph-accent"></div>Active Host Monitoring</div><div class="pbadge pb-count" id="host-c-badge">0 hosts</div></div>
+      <div class="scroll">
+        <table class="htbl">
+          <thead><tr><th>#</th><th>Hostname</th><th>Boot Source</th><th>Detected OS</th><th>Risk Score</th><th>Status</th><th>Alert Count</th><th>Last Seen</th><th>Last Techniques</th></tr></thead>
+          <tbody id="host-tbody"><tr><td colspan="9" class="empty">No active hosts</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NETWORK ══════════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-network">
+  <div class="grid-network">
+    <div class="panel">
+      <div class="ph">
+        <div class="ph-title"><div class="ph-accent" style="background:var(--blue)"></div>Live Network Attack Feed</div>
+        <div id="mon-badge" class="mon-on">● Monitoring Active</div>
+      </div>
+      <div class="nrb">
+        <div class="nrb-top"><div class="nrb-label">Network Risk Score</div><div class="nrb-val" id="nrb-val">0</div></div>
+        <div class="nrb-track"><div class="nrb-fill" id="nrb-fill" style="width:0%"></div></div>
+      </div>
+      <div class="scroll">
+        <div id="net-list" style="padding:8px;display:flex;flex-direction:column;gap:6px">
+          <div class="empty">No network attacks detected yet</div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div class="ph-title"><div class="ph-accent" style="background:var(--amber)"></div>MITRE ATT&amp;CK Map</div><div class="pbadge pb-amber" id="mitre-badge-net">0 techniques</div></div>
+      <div class="scroll"><div id="mitre-net"><div class="empty">No techniques mapped</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SENTINEL ═════════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-sentinel">
+  <div class="grid-3">
+    <div class="panel">
+      <div class="ph"><div class="ph-title"><div class="ph-accent" style="background:var(--orange)"></div>Suspicious Tools Detected</div><div class="pbadge pb-orange" id="tools-badge">0 found</div></div>
+      <div class="scroll"><div id="sentinel-tools" style="padding:8px;display:flex;flex-direction:column;gap:6px"><div class="empty">No tools detected</div></div></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div class="ph-title"><div class="ph-accent" style="background:var(--amber)"></div>Attack Commands Captured</div><div class="pbadge pb-amber" id="cmds-badge">0 captured</div></div>
+      <div class="scroll"><div id="sentinel-cmds" style="padding:8px;display:flex;flex-direction:column;gap:4px"><div class="empty">No commands captured</div></div></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div class="ph-title"><div class="ph-dot" style="background:var(--teal);width:6px;height:6px;border-radius:50%;flex-shrink:0"></div><div class="ph-accent" style="display:none"></div>Session Summary</div></div>
+      <div class="scroll"><div id="sentinel-summary" style="padding:12px;display:flex;flex-direction:column;gap:10px"><div class="empty">No session data</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FORENSIC ══════════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-forensic">
+  <div class="grid-2">
+    <div class="panel">
+      <div class="ph"><div class="ph-title"><div class="ph-accent" style="background:var(--purple)"></div>Forensic Reports</div><div class="pbadge pb-purple" id="forensic-badge">0 reports</div></div>
+      <div class="scroll"><div id="forensic-list" style="padding:8px"><div class="empty">No forensic reports generated</div></div></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div class="ph-title"><div class="ph-accent" style="background:var(--purple)"></div>Report Detail</div></div>
+      <div class="scroll">
+        <div id="forensic-detail" style="padding:16px">
+          <div class="det-empty">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+            <span>Select a report<br>to view full details</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MITRE ════════════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-mitre">
+  <div class="grid-2">
+    <div class="panel">
+      <div class="ph"><div class="ph-title"><div class="ph-accent" style="background:var(--amber)"></div>Observed Techniques</div><div class="pbadge pb-amber" id="mitre-main-badge">0 techniques</div></div>
+      <div class="scroll"><div id="mitre-main"><div class="empty">No techniques mapped yet</div></div></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div class="ph-title"><div class="ph-accent" style="background:var(--amber)"></div>Technique Evidence</div></div>
+      <div class="scroll"><div id="mitre-detail" style="padding:14px">
+        <div class="det-empty">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span>Select a technique<br>to view evidence</span>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RAM ══════════════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-ram">
+  <div class="grid-2">
+    <div class="panel">
+      <div class="ph"><div class="ph-title"><div class="ph-accent" style="background:var(--teal)"></div>RAM Dumps</div><div class="pbadge pb-teal" id="ram-badge">0 dumps</div></div>
+      <div class="scroll"><div id="ram-list" style="padding:8px;display:flex;flex-direction:column;gap:6px"><div class="empty">No RAM dumps found</div></div></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div class="ph-title"><div class="ph-accent" style="background:var(--teal)"></div>Volatility Analysis</div></div>
+      <div class="scroll"><div id="vol-detail" style="padding:16px">
+        <div class="det-empty">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16v6H4zM4 14h16v6H4z"/></svg>
+          <span>Select a RAM dump<br>to view Volatility analysis</span>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TIMELINE ══════════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-timeline">
+  <div class="grid-2">
+    <div class="panel">
+      <div class="ph"><div class="ph-title"><div class="ph-accent"></div>Boot Sequence Timeline</div><div class="pbadge pb-live">● Live</div></div>
+      <div class="scroll"><div id="tl-list" style="display:flex;flex-direction:column"><div class="empty">Awaiting boot events...</div></div></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div class="ph-title"><div class="ph-accent"></div>Session Statistics</div></div>
+      <div class="scroll">
+        <div style="padding:14px;display:flex;flex-direction:column;gap:12px">
+          <div class="boot-stat">
+            <div class="bs-title">Current Session</div>
+            <div class="bs-row"><span class="bs-key">Total Events</span><span class="bs-val" id="bs-total">0</span></div>
+            <div class="bs-row"><span class="bs-key">Alert Events</span><span class="bs-val" id="bs-alerts">0</span></div>
+            <div class="bs-row"><span class="bs-key">Network Events</span><span class="bs-val" id="bs-net">0</span></div>
+            <div class="bs-row"><span class="bs-key">Forensic Events</span><span class="bs-val" id="bs-forensic">0</span></div>
+            <div class="bs-row"><span class="bs-key">Last Event</span><span class="bs-val" style="font-size:12px" id="bs-last">—</span></div>
+          </div>
+          <div class="boot-stat">
+            <div class="bs-title">OS Detection Summary</div>
+            <div class="bs-row"><span class="bs-key">Kali Sessions</span><span class="bs-val" id="bs-kali" style="color:var(--red)">0</span></div>
+            <div class="bs-row"><span class="bs-key">Tails Sessions</span><span class="bs-val" id="bs-tails" style="color:var(--tails)">0</span></div>
+            <div class="bs-row"><span class="bs-key">Other OS</span><span class="bs-val" id="bs-other">0</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ── Config ────────────────────────────────────────────────────────────────────
+const CFG={
+  get url(){return localStorage.getItem('lbs_url')||'';},
+  get key(){return localStorage.getItem('lbs_key')||'';},
+};
+function openModal(){document.getElementById('modal').classList.add('open');document.getElementById('cfg-url').value=CFG.url;document.getElementById('cfg-key').value=CFG.key;}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+function doConnect(){
+  const url=document.getElementById('cfg-url').value.trim().replace(/\/$/,'');
+  const key=document.getElementById('cfg-key').value.trim();
+  if(!url||!key){alert('Please enter server URL and API key');return;}
+  localStorage.setItem('lbs_url',url);localStorage.setItem('lbs_key',key);
+  closeModal();bootstrap();
+}
+
+// ── Clock ─────────────────────────────────────────────────────────────────────
+function tick(){
+  const now=new Date();
+  const ts=now.toISOString().replace('T',' ').slice(0,19)+' UTC';
+  const el=document.getElementById('clk');
+  const bn=document.getElementById('banner-time');
+  if(el)el.textContent=ts;
+  if(bn)bn.textContent=ts;
+}
+setInterval(tick,1000);tick();
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let alerts=[],hosts=[],mitreMap={},tlEvents=[];
+let netRisk=0,netCount=0,sentinelFindings=0;
+let forensicSet=new Set(),ramDumps=[];
+let bsTotal=0,bsAlerts=0,bsNet=0,bsForensic=0;
+let bsKali=0,bsTails=0,bsOther=0;
+let ws=null;
+
+// ── API ───────────────────────────────────────────────────────────────────────
+async function api(path,method='GET',body=null){
+  if(!CFG.url||!CFG.key)return null;
+  try{
+    const r=await fetch(CFG.url+path,{method,headers:{'X-API-Key':CFG.key,'Content-Type':'application/json'},body:body?JSON.stringify(body):null});
+    return r.ok?r.json():null;
+  }catch{return null;}
+}
+
+function setConn(id,ok,lbl){
+  const p=document.getElementById(id+'-pill');
+  const t=document.getElementById(id+'-txt');
+  p.className='conn-pill '+(ok?'ok':'er');
+  t.textContent=lbl;
+}
+
+// ── WebSocket ─────────────────────────────────────────────────────────────────
+function connectWS(){
+  if(!CFG.url)return;
+  const url=CFG.url.replace('https://','wss://').replace('http://','ws://')+'/ws/alerts';
+  ws=new WebSocket(url);
+  ws.onopen=()=>{setConn('ws',true,'WS Live');setInterval(()=>ws&&ws.readyState===1&&ws.send('ping'),20000);};
+  ws.onclose=()=>{setConn('ws',false,'WS Offline');setTimeout(connectWS,3000);};
+  ws.onerror=()=>setConn('ws',false,'WS Error');
+  ws.onmessage=({data})=>{
+    try{
+      const m=JSON.parse(data);
+      if(m.type==='alert'){prependAlert(m.data);addTL(m.data,'alert');}
+      else if(m.type==='stats'){applyStats(m.data);}
+      else if(m.type==='network_attack'){prependNet(m.data);addTL(m.data,'net');}
+    }catch{}
+  };
+}
+
+// ── Load ──────────────────────────────────────────────────────────────────────
+async function loadAll(){
+  const [health,stats,alertsD,hostsD,netR,ramList]=await Promise.all([
+    api('/health'),api('/stats'),api('/alerts?limit=50'),
+    api('/hosts'),api('/network-monitor/report'),api('/ram-analysis'),
+  ]);
+  setConn('api',!!health,health?'API Online':'API Offline');
+  if(stats)  applyStats(stats);
+  if(alertsD){alerts=alertsD;renderAlerts();renderSentinel();updateMitre();}
+  if(hostsD) {hosts=hostsD;renderHosts();}
+  if(netR)   applyNetReport(netR);
+  if(ramList){ramDumps=ramList;renderRam();}
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+function applyStats(d){
+  const c=d.critical_alerts??0,w=d.warning_alerts??0,n=d.normal_events??0,t=d.total_alerts??0;
+  set('s-hosts',d.monitored_hosts??0);set('s-normal',n);set('s-warning',w);set('s-critical',c);
+  set('total-badge',t+' total');set('rc-c',c);set('rc-w',w);set('rc-n',n);
+  set('tc-alerts',t);set('host-c-badge',(d.monitored_hosts??0)+' hosts');set('tc-hosts',d.monitored_hosts??0);
+  const pct=t>0?Math.round(c/t*100):0;
+  set('d-pct',pct+'%');
+  document.getElementById('d-fg').style.strokeDashoffset=283-(283*pct/100);
+  const mx=Math.max(c,w,n,1);
+  document.getElementById('rb-c').style.width=(c/mx*100)+'%';
+  document.getElementById('rb-w').style.width=(w/mx*100)+'%';
+  document.getElementById('rb-n').style.width=(n/mx*100)+'%';
+  set('bs-total',bsTotal);set('bs-alerts',bsAlerts);set('bs-net',bsNet);set('bs-forensic',bsForensic);
+  set('bs-kali',bsKali);set('bs-tails',bsTails);set('bs-other',bsOther);
+}
+
+// ── Alerts ────────────────────────────────────────────────────────────────────
+function renderAlerts(){
+  const el=document.getElementById('alert-list');
+  if(!alerts.length){el.innerHTML='<div class="empty">Awaiting alerts...</div>';return;}
+  el.innerHTML='';alerts.forEach(a=>el.appendChild(buildAC(a)));
+}
+
+function prependAlert(a){
+  alerts.unshift(a);
+  bsAlerts++;
+  // Track OS types
+  const ram=a.ram_analysis||{};
+  const osSess=ram.os_sessions||[];
+  if(osSess.some(s=>s.toLowerCase().includes('kali'))) bsKali++;
+  else if(osSess.some(s=>s.toLowerCase().includes('tails'))) bsTails++;
+  else if(osSess.length) bsOther++;
+
+  const el=document.getElementById('alert-list');
+  const empty=el.querySelector('.empty');if(empty)empty.remove();
+  const card=buildAC(a);card.classList.add('flash');el.insertBefore(card,el.firstChild);
+  applyStats({total_alerts:alerts.length,critical_alerts:alerts.filter(x=>x.risk_level==='CRITICAL').length,warning_alerts:alerts.filter(x=>x.risk_level==='WARNING').length,normal_events:alerts.filter(x=>x.risk_level==='NORMAL').length,monitored_hosts:hosts.length});
+  refreshHosts();renderSentinel();updateMitre();
+  if(a.boot_source==='post_incident_forensics')addForensicCard(a);
+  // Flash tab badge
+  const tc=document.getElementById('tc-alerts');
+  tc.classList.add('alert-new');
+  setTimeout(()=>tc.classList.remove('alert-new'),3000);
+}
+
+function buildAC(a){
+  const lvl=a.risk_level||'NORMAL';
+  const ram=a.ram_analysis||{};
+  const osSess=ram.os_sessions||[];
+  const isTails=osSess.some(s=>s.toLowerCase().includes('tails'))||
+    (a.indicators||[]).some(i=>i.includes('TAILS')||i.includes('TOR'));
+  const isF=a.boot_source==='post_incident_forensics';
+  const isN=(a.indicators||[]).some(i=>i.startsWith('NETWORK:'));
+  const isS=(a.indicators||[]).some(i=>i.startsWith('SENTINEL')||i.startsWith('SNAPSHOT')||i.startsWith('TOOL:'));
+
+  const div=document.createElement('div');
+  div.className=`ac lv-${lvl}${isTails?' is-tails':''}${isF&&!isTails?' is-forensic':''}${isS&&!isF?' is-sentinel':''}`;
+  div.dataset.id=a.id;div.onclick=()=>showDetail(a);
+
+  div.innerHTML=`
+    <div class="ac-r1">
+      <div class="ac-score sv-${lvl.toLowerCase()}">${a.risk_score}</div>
+      <div class="ac-host">${esc(a.hostname)}</div>
+      <div class="ac-time">${fmtT(a.timestamp)}</div>
+    </div>
+    <div class="ac-tags">
+      <span class="tag t-os">${esc(a.detected_os||'Unknown')}</span>
+      <span class="tag t-boot">${esc(a.boot_source)}</span>
+      ${isTails?'<span class="tag t-tail">Tails OS</span>':''}
+      ${isF?'<span class="tag t-for">Forensic</span>':''}
+      ${isN?'<span class="tag t-net">Network</span>':''}
+      ${isS?'<span class="tag t-sen">Sentinel</span>':''}
+    </div>`;
+  return div;
+}
+
+// ── Detail ────────────────────────────────────────────────────────────────────
+function showDetail(a){
+  document.querySelectorAll('.ac').forEach(c=>c.classList.remove('sel'));
+  document.querySelector(`.ac[data-id="${a.id}"]`)?.classList.add('sel');
+  const lvl=a.risk_level||'NORMAL';
+  const lc=lvl==='CRITICAL'?'v-r':lvl==='WARNING'?'v-o':'v-g';
+  const inds=a.indicators||[];const techs=a.attack_techniques||{};
+  const ram=a.ram_analysis||{};
+  const tools=ram.suspicious_tools||[];const cmds=ram.attack_commands||[];
+  const procs=ram.all_processes||[];const conns=ram.network_connections||[];
+  const osSess=ram.os_sessions||[];
+  const isTails=osSess.some(s=>s.toLowerCase().includes('tails'))||inds.some(i=>i.includes('TAILS'));
+
+  const badge=document.getElementById('detail-badge');
+  badge.style.display='block';badge.textContent=lvl;
+  badge.className='pbadge '+(lvl==='CRITICAL'?'pb-red':lvl==='WARNING'?'pb-orange':'pb-live');
+
+  let h='';
+
+  // Tails banner
+  if(isTails){
+    h+=`<div class="tails-banner">
+      <div class="tails-banner-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div>
+        <div class="tails-banner-title">Tails OS Detected</div>
+        <div class="tails-banner-sub">Anonymity OS — All traffic routed through Tor. Enhanced forensic evidence required.</div>
+      </div>
+    </div>`;
+  }
+
+  h+=`<div class="d-hostname">${esc(a.hostname)}</div>
+    <div class="d-score-row">
+      <div class="d-score-big" style="color:var(--${lvl==='CRITICAL'?'red':lvl==='WARNING'?'orange':'green'})">${a.risk_score}</div>
+      <div class="d-score-meta">/ 200 RISK SCORE<br>${lvl} SEVERITY</div>
+    </div>
+    <div class="d-sec"><div class="d-sec-t">Boot Information</div>
+      <div class="d-row"><span class="d-key">Boot Source</span><span class="d-val ${lc}">${esc(a.boot_source)}</span></div>
+      <div class="d-row"><span class="d-key">Detected OS</span><span class="d-val ${isTails?'v-t':'v-b'}">${esc(a.detected_os||'unknown')}</span></div>
+      <div class="d-row"><span class="d-key">Kernel</span><span class="d-val">${esc((a.kernel||'').slice(0,32))}</span></div>
+      <div class="d-row"><span class="d-key">Timestamp</span><span class="d-val">${fmtT(a.timestamp)}</span></div>
+    </div>`;
+
+  if(inds.length){
+    h+=`<div class="d-sec"><div class="d-sec-t">Indicators (${inds.length})</div>
+      <div class="ind-list">${inds.map(i=>{
+        const isTailsInd=i.includes('TAILS')||i.includes('TOR')||i.includes('ANONYMITY');
+        return `<div class="ind-item${isTailsInd?' tails-ind':''}">${esc(i)}</div>`;
+      }).join('')}</div></div>`;
+  }
+
+  if(Object.keys(techs).length){
+    h+=`<div class="d-sec"><div class="d-sec-t">Attack Techniques</div>${Object.entries(techs).map(([k,v])=>`
+      <div class="d-row"><span class="d-key">${esc(k)}</span><span class="d-val v-o">${Array.isArray(v)?v.length:1} signal(s)</span></div>`).join('')}</div>`;
+  }
+
+  if(tools.length||cmds.length||osSess.length){
+    h+=`<div class="d-sec"><div class="d-sec-t">Sentinel Partition Analysis</div>`;
+    if(osSess.length) h+=`<div class="d-row"><span class="d-key">OS Sessions</span><span class="d-val ${isTails?'v-t':'v-o'}">${esc(osSess.join(', '))}</span></div>`;
+    if(ram.kali_detected) h+=`<div class="d-row"><span class="d-key">Kali Linux</span><span class="d-val v-r">CONFIRMED — Session captured</span></div>`;
+    if(isTails) h+=`<div class="d-row"><span class="d-key">Tails OS</span><span class="d-val v-t">CONFIRMED — Anonymity session detected</span></div>`;
+    h+=`<div class="d-row"><span class="d-key">Snapshots Analyzed</span><span class="d-val">${ram.snapshot_count||0}</span></div></div>`;
+
+    if(tools.length) h+=`<div class="d-sec"><div class="d-sec-t">Suspicious Tools (${tools.length})</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+      ${tools.slice(0,8).map(t=>{
+        const isTailsTool=t.technique&&(t.technique.includes('Tor')||t.technique.includes('Tails')||t.technique.includes('Anon'));
+        return `<div class="tool-card${isTailsTool?' tails-tool':''}">
+          <div class="tc-top"><span class="tc-name">${esc(t.tool)}</span><span class="tc-mitre">${esc(t.mitre||'')}</span></div>
+          <div style="display:flex;justify-content:space-between">
+            <span class="tc-tech">${esc(t.technique||'')}</span>
+            <span class="tc-risk">+${t.risk_score||t.risk||0} risk</span>
+          </div>
+          ${t.full_cmd?`<div class="tc-cmd">$ ${esc(t.full_cmd.slice(0,120))}</div>`:''}
+        </div>`;
+      }).join('')}
+      </div></div>`;
+
+    if(cmds.length) h+=`<div class="d-sec"><div class="d-sec-t">Attack Commands (${cmds.length})</div>
+      <div style="display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto">
+      ${cmds.slice(0,12).map(c=>`<div class="cmd-card">
+        <div class="cmd-txt">$ ${esc((c.command||'').slice(0,100))}</div>
+        <div class="cmd-meta"><span class="cmd-tech">${esc(c.technique||'')}</span><span>${esc(c.mitre||'')} · ${esc(c.source||'')}</span></div>
+      </div>`).join('')}
+      </div></div>`;
+
+    if(procs.length) h+=`<div class="d-sec"><div class="d-sec-t">Captured Processes (${procs.length})</div>
+      <div style="max-height:110px;overflow-y:auto;font-family:var(--ff-m);font-size:9px">
+      ${procs.slice(0,20).map(p=>`<div style="display:flex;gap:8px;padding:2px 0;border-bottom:1px solid var(--s3)">
+        <span style="color:var(--ink4);width:32px">${p.pid||''}</span>
+        <span style="color:var(--blue);width:52px;overflow:hidden;text-overflow:ellipsis">${esc(p.user||'')}</span>
+        <span style="color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((p.cmd||'').slice(0,50))}</span>
+      </div>`).join('')}
+      </div></div>`;
+  }
+
+  if(a.attack_summary) h+=`<div class="d-sec"><div class="d-sec-t">Forensic Summary</div>
+    <div style="font-family:var(--ff-m);font-size:9px;color:var(--ink3);line-height:1.8;white-space:pre-wrap;background:var(--s2);padding:10px 12px;border-radius:5px;border:1px solid var(--border)">${esc(a.attack_summary)}</div></div>`;
+
+  document.getElementById('detail-body').innerHTML=h;
+  if(a.boot_source==='post_incident_forensics')showForensicDetail(a);
+}
+
+// ── Hosts ─────────────────────────────────────────────────────────────────────
+function renderHosts(){
+  const tb=document.getElementById('host-tbody');
+  if(!hosts.length){tb.innerHTML='<tr><td colspan="9" class="empty">No active hosts detected</td></tr>';return;}
+  tb.innerHTML=hosts.map((h,i)=>{
+    const l=(h.last_risk_level||'NORMAL').toLowerCase();
+    const sc=l==='critical'?'sp-c':l==='warning'?'sp-w':'sp-n';
+    const vc=l==='critical'?'var(--red)':l==='warning'?'var(--orange)':'var(--green)';
+    const techs=Object.keys(h.last_attack_techniques||{}).slice(0,2).join(', ')||'—';
+    return `<tr>
+      <td style="color:var(--ink4);font-weight:600">${i+1}</td>
+      <td style="color:var(--navy);font-weight:600;font-family:var(--ff-m)">${esc(h.hostname)}</td>
+      <td><span style="font-family:var(--ff-m);font-size:10px">${esc(h.last_boot_source||'—')}</span></td>
+      <td style="font-weight:500">${esc(h.last_detected_os||'—')}</td>
+      <td style="color:${vc};font-weight:800;font-family:var(--ff-h);font-size:16px">${h.last_risk_score}</td>
+      <td><span class="status-pill ${sc}">${h.last_risk_level}</span></td>
+      <td style="color:var(--ink3);font-weight:600;font-family:var(--ff-h)">${h.alert_count||0}</td>
+      <td style="color:var(--ink4);font-family:var(--ff-m);font-size:10px">${fmtT(h.last_seen)}</td>
+      <td style="color:var(--ink3);font-size:10px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(techs)}</td>
+    </tr>`;
+  }).join('');
+  set('host-c-badge',hosts.length+' host'+(hosts.length!==1?'s':''));
+  set('tc-hosts',hosts.length);
+}
+
+async function refreshHosts(){const d=await api('/hosts');if(d){hosts=d;renderHosts();}}
+
+// ── Timeline ──────────────────────────────────────────────────────────────────
+function addTL(data,type){
+  tlEvents.unshift({data,type});if(tlEvents.length>50)tlEvents.pop();
+  bsTotal++;if(type==='alert')bsAlerts++;if(type==='net')bsNet++;
+  const wrap=document.getElementById('tl-list');
+  const empty=wrap.querySelector('.empty');if(empty)empty.remove();
+  const div=document.createElement('div');div.className='tl-item';
+  const isNet=type==='net';
+  const isTails=(data.indicators||[]).some(i=>i.includes('TAILS'))||(data.ram_analysis?.os_sessions||[]).some(s=>s.includes('tails'));
+  const color=isNet?'var(--blue)':isTails?'var(--tails)':data.risk_level==='CRITICAL'?'var(--red)':'var(--orange)';
+  const msg=isNet?`<span class="tl-src">[NET]</span> ${esc(data.attack_type||data.indicator||'')}`:
+    `<span class="tl-src">${esc(data.hostname)}</span> ${isTails?'— <span style="color:var(--tails)">Tails OS</span>':''} score ${data.risk_score} ${data.risk_level||''}`;
+  div.innerHTML=`
+    <div class="tl-spine"><div class="tl-pip" style="background:${color}"></div><div class="tl-line"></div></div>
+    <div class="tl-body"><div class="tl-ts">${fmtT(data.timestamp||new Date().toISOString())}</div><div class="tl-msg">${msg}</div></div>`;
+  wrap.insertBefore(div,wrap.firstChild);
+  set('bs-total',bsTotal);set('bs-alerts',bsAlerts);set('bs-net',bsNet);set('bs-forensic',bsForensic);
+  set('bs-kali',bsKali);set('bs-tails',bsTails);set('bs-other',bsOther);
+  set('bs-last',fmtT(data.timestamp||new Date().toISOString()));
+}
+
+// ── Network ───────────────────────────────────────────────────────────────────
+function applyNetReport(r){
+  if(!r)return;
+  netRisk=r.risk_score||0;netCount=r.attack_count||0;
+  set('s-net',netCount);set('nrb-val',netRisk);set('tc-net',netCount);
+  const fill=document.getElementById('nrb-fill');
+  fill.style.width=Math.min(netRisk,100)+'%';
+  fill.style.background=netRisk>60?'var(--red)':netRisk>30?'var(--orange)':'var(--green)';
+  const mon=document.getElementById('mon-badge');
+  if(r.monitoring_active){mon.className='mon-on';mon.textContent='● Monitoring Active';}
+  else{mon.className='mon-off';mon.textContent='○ Monitor Stopped';}
+  const attacks=r.attacks_detected||[];
+  if(attacks.length){const el=document.getElementById('net-list');el.innerHTML='';attacks.slice(0,20).forEach(a=>el.appendChild(buildNetCard(a)));}
+  if(Object.keys(r.mitre_techniques||{}).length)buildMitre(r.mitre_techniques);
+}
+
+function prependNet(d){
+  netCount++;set('s-net',netCount);set('tc-net',netCount);
+  netRisk=Math.min(netRisk+(d.risk||0),100);set('nrb-val',netRisk);
+  const fill=document.getElementById('nrb-fill');
+  fill.style.width=netRisk+'%';
+  fill.style.background=netRisk>60?'var(--red)':netRisk>30?'var(--orange)':'var(--green)';
+  const el=document.getElementById('net-list');
+  const empty=el.querySelector('.empty');if(empty)empty.remove();
+  const card=buildNetCard(d);card.classList.add('flash');el.insertBefore(card,el.firstChild);
+  if(d.technique){buildMitre({[d.technique]:[d.description]});}
+}
+
+function buildNetCard(a){
+  const type=a.attack_type||a.type||'UNKNOWN';
+  const bcls=['PORT_SCAN','ARP_SWEEP'].includes(type)?'nb-am':['C2_CONNECTION','EXFILTRATION'].includes(type)?'nb-r':'nb-or';
+  const div=document.createElement('div');div.className=`net-card ${type}`;
+  div.innerHTML=`<div class="na-top"><span class="na-badge ${bcls}">${type.replace(/_/g,' ')}</span><span class="na-tech">${esc(a.technique||'')}</span></div>
+    <div class="na-desc">${esc(a.description||'')}</div>
+    <div class="na-foot"><span class="na-ip">${esc(a.src_ip||'')}</span><span class="na-time">${fmtT(a.timestamp)}</span></div>`;
+  return div;
+}
+
+// ── MITRE ─────────────────────────────────────────────────────────────────────
+function buildMitre(map){
+  // Merge
+  Object.entries(map).forEach(([k,v])=>{
+    if(!mitreMap[k])mitreMap[k]=[];
+    const ex=new Set(mitreMap[k]);
+    (Array.isArray(v)?v:[v]).forEach(item=>{if(!ex.has(item))mitreMap[k].push(item);});
+  });
+  const keys=Object.keys(mitreMap);
+  const count=keys.length;
+  set('mitre-badge-net',count+' technique'+(count!==1?'s':''));
+  set('mitre-main-badge',count+' technique'+(count!==1?'s':''));
+  set('tc-mitre',count);
+  set('s-tech',count);
+
+  const html=!keys.length?'<div class="empty">No techniques mapped yet</div>':
+    keys.map((k,i)=>{
+      const v=mitreMap[k];const cnt=Array.isArray(v)?v.length:1;
+      const m=k.match(/\(T\d+[.\d]*\)/);
+      const id=m?m[0].replace(/[()]/g,''):'';
+      const nm=id?k.replace(` (${id})`,''):k;
+      return `<div class="mitre-row" onclick="showMitreDetail('${esc(k)}')">
+        <div class="mt-num">${String(i+1).padStart(2,'0')}</div>
+        <div class="mt-tech">${esc(nm)}</div>
+        ${id?`<div class="mt-id">${esc(id)}</div>`:''}
+        <div class="mt-cnt">${cnt}×</div>
+      </div>`;
+    }).join('');
+
+  document.getElementById('mitre-net').innerHTML=html;
+  document.getElementById('mitre-main').innerHTML=html;
+}
+
+function showMitreDetail(tech){
+  const descs=mitreMap[tech]||[];
+  const el=document.getElementById('mitre-detail');
+  if(!descs.length){el.innerHTML='<div class="empty">No evidence</div>';return;}
+  const m=tech.match(/\(T\d+[.\d]*\)/);
+  const id=m?m[0].replace(/[()]/g,''):'';
+  const nm=id?tech.replace(` (${id})`,''):tech;
+  el.innerHTML=`<div class="d-sec">
+    <div class="d-sec-t">${esc(nm)} ${id?`<span style="font-family:var(--ff-m);font-size:9px;color:var(--blue)">[${esc(id)}]</span>`:''}</div>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      ${descs.slice(0,20).map(d=>`<div class="ind-item">${esc(d)}</div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function updateMitre(){
+  const merged={};
+  alerts.forEach(a=>{
+    const ram=a.ram_analysis||{};
+    (ram.suspicious_tools||[]).forEach(t=>{
+      const mitre=t.mitre||'';const tech=t.technique||'Unknown';
+      const key=mitre?`${tech} (${mitre})`:tech;
+      if(!merged[key])merged[key]=[];
+      merged[key].push(`[Sentinel] ${t.tool}`);
+    });
+    (ram.attack_commands||[]).forEach(c=>{
+      const mitre=c.mitre||'';const tech=c.technique||'Unknown';
+      const key=mitre?`${tech} (${mitre})`:tech;
+      if(!merged[key])merged[key]=[];
+      merged[key].push(`[Cmd] $ ${(c.command||'').slice(0,50)}`);
+    });
+    Object.entries(a.attack_techniques||{}).forEach(([tech,sigs])=>{
+      if(!merged[tech])merged[tech]=[];
+      if(Array.isArray(sigs))sigs.slice(0,5).forEach(s=>merged[tech].push(String(s).slice(0,80)));
+    });
+    (a.indicators||[]).forEach(ind=>{
+      if(ind.startsWith('TOOL:')||ind.startsWith('SNAPSHOT_TOOL:')){
+        const key='Tool Execution (T1059)';
+        if(!merged[key])merged[key]=[];
+        merged[key].push(`[Indicator] ${ind}`);
+      }else if(ind.startsWith('NETWORK:')){
+        const key='Network Activity';
+        if(!merged[key])merged[key]=[];
+        merged[key].push(`[Network] ${ind}`);
+      }else if(ind.includes('TAILS')||ind.includes('TOR')){
+        const key='Anonymity Network (T1090)';
+        if(!merged[key])merged[key]=[];
+        merged[key].push(`[Tails] ${ind}`);
+      }
+    });
+  });
+  if(Object.keys(merged).length)buildMitre(merged);
+}
+
+// ── Sentinel ──────────────────────────────────────────────────────────────────
+function renderSentinel(){
+  let allTools=[],allCmds=[],kaliDet=false,tailsDet=false,osSess=new Set(),snapCount=0;
+  const seen=new Set();
+
+  alerts.forEach(a=>{
+    const ram=a.ram_analysis||{};
+    (ram.suspicious_tools||[]).forEach(t=>{
+      if(!seen.has(t.tool)){seen.add(t.tool);allTools.push(t);}
+    });
+    allCmds.push(...(ram.attack_commands||[]));
+    if(ram.kali_detected)kaliDet=true;
+    const osSessions=ram.os_sessions||[];
+    osSessions.forEach(s=>{
+      osSess.add(s);
+      if(s.toLowerCase().includes('tails'))tailsDet=true;
+    });
+    snapCount+=ram.snapshot_count||0;
+  });
+
+  sentinelFindings=allTools.length;
+  set('s-sentinel',sentinelFindings);set('tc-sentinel',sentinelFindings);
+  set('tools-badge',allTools.length+' found');set('cmds-badge',allCmds.length+' captured');
+
+  // Tails banner at top of sentinel if detected
+  const tEl=document.getElementById('sentinel-tools');
+  let toolsHtml='';
+  if(tailsDet){
+    toolsHtml+=`<div class="tails-banner">
+      <div class="tails-banner-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div><div class="tails-banner-title">Tails OS Session Confirmed</div>
+      <div class="tails-banner-sub">Anonymity OS detected — Tor routing active</div></div>
+    </div>`;
+  }
+  toolsHtml+=allTools.length?allTools.map(t=>{
+    const isTailsTool=t.technique&&(t.technique.includes('Tor')||t.technique.includes('Anon'));
+    return `<div class="tool-card${isTailsTool?' tails-tool':''}">
+      <div class="tc-top"><span class="tc-name">${esc(t.tool)}</span><span class="tc-mitre">${esc(t.mitre||'')}</span></div>
+      <div style="display:flex;justify-content:space-between">
+        <span class="tc-tech">${esc(t.technique||'')}</span>
+        <span class="tc-risk">+${t.risk_score||t.risk||0}</span>
+      </div>
+      ${t.full_cmd?`<div class="tc-cmd">$ ${esc(t.full_cmd.slice(0,120))}</div>`:''}
+    </div>`;
+  }).join(''):'<div class="empty">No tools detected</div>';
+  tEl.innerHTML=toolsHtml;
+
+  const cEl=document.getElementById('sentinel-cmds');
+  cEl.innerHTML=allCmds.length?allCmds.map(c=>`<div class="cmd-card">
+    <div class="cmd-txt">$ ${esc((c.command||'').slice(0,100))}</div>
+    <div class="cmd-meta"><span class="cmd-tech">${esc(c.technique||'')}</span><span>${esc(c.mitre||'')} · ${esc(c.source||'')}</span></div>
+  </div>`).join(''):'<div class="empty">No commands captured</div>';
+
+  const sEl=document.getElementById('sentinel-summary');
+  sEl.innerHTML=`
+    <div class="sinfo">
+      <div class="sinfo-title">Partition Analysis Results</div>
+      <div class="sinfo-row"><span class="sinfo-key">Kali Linux</span><span class="sinfo-val ${kaliDet?'v-kali':'v-clean'}">${kaliDet?'DETECTED':'Not Found'}</span></div>
+      <div class="sinfo-row"><span class="sinfo-key">Tails OS</span><span class="sinfo-val ${tailsDet?'v-tails':'v-clean'}">${tailsDet?'DETECTED — Tor Active':'Not Found'}</span></div>
+      <div class="sinfo-row"><span class="sinfo-key">OS Sessions</span><span class="sinfo-val">${[...osSess].join(', ')||'—'}</span></div>
+      <div class="sinfo-row"><span class="sinfo-key">Snapshots Analyzed</span><span class="sinfo-val">${snapCount}</span></div>
+      <div class="sinfo-row"><span class="sinfo-key">Suspicious Tools</span><span class="sinfo-val">${allTools.length}</span></div>
+      <div class="sinfo-row"><span class="sinfo-key">Attack Commands</span><span class="sinfo-val">${allCmds.length}</span></div>
+    </div>`;
+}
+
+// ── Forensic ──────────────────────────────────────────────────────────────────
+function addForensicCard(a){
+  if(forensicSet.has(a.id))return;forensicSet.add(a.id);
+  bsForensic++;
+  const el=document.getElementById('forensic-list');
+  const empty=el.querySelector('.empty');if(empty)empty.remove();
+  const cnt=forensicSet.size;
+  set('forensic-badge',cnt+' report'+(cnt!==1?'s':''));set('tc-forensic',cnt);
+  const ram=a.ram_analysis||{};
+  const isTails=(ram.os_sessions||[]).some(s=>s.includes('tails'));
+  if(isTails)bsTails++;else if(ram.kali_detected)bsKali++;
+  const div=document.createElement('div');
+  div.className=`fcard${isTails?' tails-fcard':''}`;
+  div.onclick=()=>{showDetail(a);showForensicDetail(a);};
+  div.innerHTML=`<div class="fcard-top">
+    <div class="fcard-score${isTails?' tails-score':''}">${a.risk_score}</div>
+    <div class="fcard-host">${esc(a.hostname)}</div>
+    <div class="fcard-time">${fmtT(a.timestamp)}</div>
+  </div>
+  <div class="fcard-sum">${esc((a.attack_summary||'Post-incident forensic analysis').slice(0,120))}</div>`;
+  el.insertBefore(div,el.firstChild);
+}
+
+function showForensicDetail(a){
+  const fd=document.getElementById('forensic-detail');
+  const ram=a.ram_analysis||{};
+  const tools=ram.suspicious_tools||[];const cmds=ram.attack_commands||[];
+  const isTails=(ram.os_sessions||[]).some(s=>s.includes('tails'));
+  fd.innerHTML=`
+    ${isTails?`<div class="tails-banner" style="margin-bottom:12px">
+      <div class="tails-banner-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div><div class="tails-banner-title">Tails OS — Anonymity Session</div>
+      <div class="tails-banner-sub">All network traffic was Tor-routed. Standard forensics may be insufficient.</div></div>
+    </div>`:''}
+    <div class="d-sec"><div class="d-sec-t">${esc(a.hostname)} — ${fmtT(a.timestamp)}</div>
+      <div class="d-row"><span class="d-key">Risk Score</span><span class="d-val v-r">${a.risk_score} / 200</span></div>
+      ${ram.kali_detected?`<div class="d-row"><span class="d-key">Kali Linux</span><span class="d-val v-r">CONFIRMED</span></div>`:''}
+      ${isTails?`<div class="d-row"><span class="d-key">Tails OS</span><span class="d-val v-t">CONFIRMED</span></div>`:''}
+      <div class="d-row"><span class="d-key">Snapshots</span><span class="d-val">${ram.snapshot_count||0}</span></div>
+      <div class="d-row"><span class="d-key">Tools Found</span><span class="d-val v-o">${tools.length}</span></div>
+      <div class="d-row"><span class="d-key">Commands</span><span class="d-val v-o">${cmds.length}</span></div>
+    </div>
+    ${tools.length?`<div class="d-sec"><div class="d-sec-t">Tools Detected</div>${tools.map(t=>`<div class="d-row"><span class="d-key">${esc(t.tool)}</span><span class="d-val v-o">${esc(t.technique||'')} [${esc(t.mitre||'')}]</span></div>`).join('')}</div>`:''}
+    ${cmds.length?`<div class="d-sec"><div class="d-sec-t">Commands Captured</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+      ${cmds.slice(0,10).map(c=>`<div class="cmd-card"><div class="cmd-txt">$ ${esc((c.command||'').slice(0,90))}</div><div class="cmd-meta"><span class="cmd-tech">${esc(c.technique||'')}</span></div></div>`).join('')}
+      </div></div>`:''}
+    ${a.attack_summary?`<div class="d-sec"><div class="d-sec-t">Forensic Summary</div>
+      <div style="font-family:var(--ff-m);font-size:9px;color:var(--ink3);line-height:1.8;white-space:pre-wrap;background:var(--s2);padding:10px;border-radius:5px;border:1px solid var(--border)">${esc(a.attack_summary)}</div></div>`:''}`;
+}
+
+// ── RAM ───────────────────────────────────────────────────────────────────────
+function renderRam(){
+  set('ram-badge',ramDumps.length+' dump'+(ramDumps.length!==1?'s':''));
+  set('tc-ram',ramDumps.length);
+  const el=document.getElementById('ram-list');
+  if(!ramDumps.length){el.innerHTML='<div class="empty">No RAM dumps found</div>';return;}
+  el.innerHTML=ramDumps.map(r=>`
+    <div class="rdc" onclick="showRamDetail(${r.alert_id})">
+      <div class="rdc-top">
+        <div class="rdc-name">${esc(r.ram_dump_file||'memdump.raw')}</div>
+        <div class="rdc-badge">${r.analysis_complete?'Analyzed':'Pending'}</div>
+      </div>
+      <div class="rdc-meta">
+        <span>${esc(r.hostname)}</span>
+        <span>${fmtT(r.timestamp)}</span>
+        <span>${r.tools_found||0} tools found</span>
+      </div>
+    </div>`).join('');
+}
+
+async function showRamDetail(id){
+  const data=await api(`/ram-analysis/${id}`);
+  if(!data){document.getElementById('vol-detail').innerHTML='<div class="empty">No analysis data</div>';return;}
+  const tools=data.suspicious_tools||[];const cmds=data.commands_detected||[];const procs=data.processes||[];
+  document.getElementById('vol-detail').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="sinfo">
+        <div class="sinfo-title">Dump: ${esc(data.ram_dump_file||'unknown')}</div>
+        <div class="sinfo-row"><span class="sinfo-key">Host</span><span class="sinfo-val">${esc(data.hostname)}</span></div>
+        <div class="sinfo-row"><span class="sinfo-key">Status</span><span class="sinfo-val ${data.analysis_complete?'v-clean':'v-o'}">${data.analysis_complete?'Complete':'Incomplete'}</span></div>
+        <div class="sinfo-row"><span class="sinfo-key">Processes</span><span class="sinfo-val">${procs.length}</span></div>
+        <div class="sinfo-row"><span class="sinfo-key">Suspicious Tools</span><span class="sinfo-val ${tools.length?'v-r':''}">${tools.length}</span></div>
+        <div class="sinfo-row"><span class="sinfo-key">Commands</span><span class="sinfo-val ${cmds.length?'v-o':''}">${cmds.length}</span></div>
+        <div class="sinfo-row"><span class="sinfo-key">Risk Increment</span><span class="sinfo-val v-o">+${data.risk_score_increment||0}</span></div>
+      </div>
+      ${tools.length?`<div class="d-sec"><div class="d-sec-t">Tools in Memory</div><div style="display:flex;flex-direction:column;gap:5px">${tools.map(t=>`<div class="tool-card"><div class="tc-top"><span class="tc-name">${esc(t.tool||t.name||'')}</span><span class="tc-mitre">${esc(t.mitre||'')}</span></div><div class="tc-tech">${esc(t.technique||'')}</div></div>`).join('')}</div></div>`:''}
+      ${procs.length?`<div class="d-sec"><div class="d-sec-t">Running Processes (${procs.length})</div><div style="max-height:120px;overflow-y:auto;font-family:var(--ff-m);font-size:9px">${procs.slice(0,25).map(p=>`<div style="display:flex;gap:8px;padding:2px 0;border-bottom:1px solid var(--s3)"><span style="color:var(--ink4);width:32px">${p.pid||''}</span><span style="color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((p.name||p.cmd||'').slice(0,60))}</span></div>`).join('')}</div></div>`:''}
+    </div>`;
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+function set(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmtT(iso){try{return new Date(iso).toLocaleTimeString('en-GB',{hour12:false});}catch{return '--';}}
+
+// ── Bootstrap ─────────────────────────────────────────────────────────────────
+function bootstrap(){
+  if(!CFG.url||!CFG.key){openModal();return;}
+  if(ws){ws.close();ws=null;}
+  loadAll();connectWS();
+  setInterval(loadAll,30000);
+  setInterval(async()=>{const r=await api('/network-monitor/report');if(r)applyNetReport(r);},5000);
+  setInterval(async()=>{const d=await api('/hosts');if(d){hosts=d;renderHosts();}},15000);
+}
+
+window.addEventListener('load',()=>{if(!CFG.url||!CFG.key)openModal();else bootstrap();});
+</script>
+</body>
+</html>
