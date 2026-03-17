@@ -241,11 +241,6 @@ INFO: Uvicorn running on https://0.0.0.0:8443
 
 **Step 1 — Create LBSENTINEL hidden partition:**
 
-If disk is full, run from Kali Live USB first:
-```bash
-sudo bash setup_partition_v3.sh
-```
-
 From Ubuntu:
 ```bash
 sudo bash device2_setup/setup_device2_ubuntu.sh
@@ -464,7 +459,7 @@ Dashboard: Kali confirmed, full MITRE map, forensic report generated
 
 1. Start server on Device 1
 2. Open `sentinel_pro.html` in Chrome — connect to server
-3. Plug modified Kali USB into Device 2
+3. Plug Kali USB into Device 2
 4. Reboot Device 2 → F12 → select USB → Live system
 5. In Kali terminal run attack commands (nmap, arp-scan, hydra, nc)
 6. Wait 60 seconds for snapshot cycles
